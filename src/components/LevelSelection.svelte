@@ -5,25 +5,45 @@
 
   type Props = {
     levels: string[][];
+    finishedLevels: boolean[];
     play: (level: number) => void;
   }
 
-  let {levels, play}: Props = $props();
+  let {levels, finishedLevels, play}: Props = $props();
 
   let board: Board | null = $state(null);
   let selected = $state(-1);
+  let levelSection = $state(0);
 
   function selectLevel(i: number) {
     selected = i;
     board = new Board();
     board.load(levels[i]);
-  } 
+  }
 </script>
 <main>
-  <div class="levels">
-    {#each range(1, 91) as i}
-      <button class={["level", {selected: selected === i}]} onclick={() => selectLevel(i)}>{i+1}</button>
-    {/each}
+  <div class="col">
+    <div class="levels">
+      {#each range(levelSection*30, levelSection*30+30) as i}
+        <button
+          class={["level", {selected: selected === i, finished: finishedLevels[i]}]}
+          onclick={() => selectLevel(i)}
+        >
+          {i+1}
+        </button>
+      {/each}
+    </div>
+    <div class="level-section">
+      {#each range(0, 6) as i}
+        <button
+          class={["level section", {selected: levelSection === i}]}
+          onclick={() => levelSection = i}
+        >
+          {i*30+1}-{i*30+30}
+        </button>
+      {/each}
+    </div>
+    
   </div>
   <div class="right">
     <div class="preview">
@@ -34,7 +54,13 @@
       {/if}
     </div>
     <div>
-      <button disabled={selected === -1} onclick={() => play(selected)}>Jouer</button>
+      <button
+        class="ui-button"
+        disabled={selected === -1}
+        onclick={() => play(selected)}
+      >
+        Jouer
+      </button>
     </div>
   </div>
 </main>
@@ -46,17 +72,31 @@
     align-items: center;
   }
 
+  .col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+
   .levels {
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     grid-gap: 1rem;
-    width: 45rem;
+    width: 30rem;
+  }
+
+  .level-section {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-gap: 1rem;
+    width: 35rem;
   }
 
   .level {
     line-height: 1.15;
     color: rgba(0, 0, 0, 0.65);
-    max-width: 3.6rem;
+    width: 3.6rem;
     height: 3.6rem;
     border: thin solid gray;
     display: inline-flex;
@@ -70,8 +110,16 @@
     background-color: transparent;
     outline: 0;
   
+    &.section {
+      width: 4.5rem;
+    }
+
     &.selected {
       border: medium solid blue;
+    }
+
+    &.finished {
+        background-color: lightgreen;
     }
   }
 

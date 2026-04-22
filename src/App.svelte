@@ -1,18 +1,25 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
   import BoardView from "./components/BoardView.svelte";
   import LevelSelection from "./components/LevelSelection.svelte";
   import { Board, Direction } from "./model.svelte";
-  
+  import { arrayOf } from "./util";
+    import { confetti } from "./confetti";
+
+  const LEVEL_COUNT = 184;
+
   type Mode = "game" | "selection";
 
+  let currentLevel = $state(-1);
   let board = $state(new Board());
   let mode: Mode = $state("game");
   let levelTexts: string[][] = $state.raw([]);
-  let levelFinished = $derived(board.isLevelFinished());
+  let finishedLevels: boolean[] = $state(getFinishedLevels());
+  let isLevelFinished = $derived(currentLevel >= 0 && board.isLevelFinished());
 
   function loadLevel(i: number) {
     mode = "game";
+    currentLevel = i;
     board.load(levelTexts[i]);
   }
 
@@ -21,10 +28,18 @@
   }
 
   function undo() {
-    if (levelFinished) {
+    if (isLevelFinished) {
       return;
     }
     board.undo();
+  }
+
+  function getFinishedLevels(): boolean[] {
+    const data = localStorage.getItem("sokoban");
+    if (data === null) {
+      return arrayOf(LEVEL_COUNT, false);
+    }
+    return JSON.parse(data)
   }
 
   onMount(async () => {
@@ -37,8 +52,18 @@
     loadLevel(0);
   });
 
+  $effect(() => {
+    if (isLevelFinished) {
+      untrack(() => {
+        console.log("plop");
+        finishedLevels[currentLevel] = true;
+        localStorage.setItem("sokoban", JSON.stringify(finishedLevels));
+      })
+    }
+  })
+
   function handleKeydown(ev: KeyboardEvent) {
-    if (levelFinished) {
+    if (isLevelFinished) {
       return;
     }
     let prev = true;
@@ -67,17 +92,21 @@
 {#if mode === "game"}
   <div class="game-container">
     <div>
-      <button onclick={undo}>Annuler</button>
-      <button onclick={selectLevel}>Choisir un niveau</button>
+      <button class="ui-button" onclick={undo}>Annuler</button>
+      <button class="ui-button" onclick={selectLevel}>Choisir un niveau</button>
     </div>
     <main>
       <BoardView {board} />
     </main>
   </div>
 {:else}
-  <LevelSelection levels={levelTexts} play={loadLevel} />
+  <LevelSelection levels={levelTexts} {finishedLevels} play={loadLevel} />
 {/if}
-
+{#if isLevelFinished}
+  <div class="confetti-container">
+    <div use:confetti={{stageHeight: "100vh", stageWidth: "100vw"}}></div>
+  </div>
+{/if}
 
 <svelte:window onkeydown={handleKeydown} />
 
@@ -98,5 +127,17 @@
   main {
     width: 800px;
     height: 800px;
+  }
+
+  .confetti-container {
+    position: fixed;
+    top: 15vh;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    z-index: 400;
   }
 </style>
