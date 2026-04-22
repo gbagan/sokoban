@@ -5,6 +5,7 @@
   import { Board, Direction } from "./model.svelte";
   import { arrayOf } from "./util";
   import { confetti } from "./confetti";
+    import Joypad from "./components/Joypad.svelte";
 
   const LEVEL_COUNT = 184;
 
@@ -98,9 +99,12 @@
       <button class="ui-button" onclick={selectLevel}>Choisir un niveau</button>
       <span class="moves">Mouvements: {board.moveCount()}</span>
     </header>
-    <main>
-      <BoardView {board} />
-    </main>
+    <div class="game-sub-container">
+      <main>
+        <BoardView {board} />
+      </main>
+      <Joypad move={dir => board.move(dir)} />
+    </div>
   </div>
 {:else}
   <LevelSelection levels={levelTexts} {bestScores} play={loadLevel} />
@@ -127,9 +131,21 @@
     gap: 2rem;
   }
 
+  .game-sub-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+  }
+
+  @media (orientation: portrait) {
+    .game-sub-container {
+      flex-direction: column;
+    }
+  }
+
   main {
-    width: 800px;
-    height: 800px;
+    width: min(90vmin, 800px);
+    height: min(90vmin, 800px);
   }
 
   header {

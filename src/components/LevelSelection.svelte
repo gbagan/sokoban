@@ -42,8 +42,7 @@
           {i*30+1}-{i*30+30}
         </button>
       {/each}
-    </div>
-    
+    </div>  
   </div>
   <div class="right">
     <div class="preview">
@@ -75,6 +74,13 @@
     display: flex;
     justify-content: space-around;
     align-items: center;
+    gap: 2rem;
+  }
+
+  @media (orientation: portrait) {
+    main {
+      flex-direction: column;
+    }
   }
 
   .col {
@@ -95,7 +101,6 @@
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     grid-gap: 1rem;
-    width: 35rem;
   }
 
   .level {
@@ -129,8 +134,8 @@
   }
 
   .preview {
-    width: 30rem;
-    height: 25rem;
+    width: min(90vmin, 30rem);
+    height: min(75vmin, 25rem);
     padding: 1rem;
     border: thin solid gray;
   }
