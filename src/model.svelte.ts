@@ -19,7 +19,7 @@ export class Board {
   #hero: number;
   #boxes: number[];
   #heroDirection: Direction;
-  #history: [Direction, Move][];
+  #history: [Direction, Direction, Move][];
 
   constructor() {
     this.#width = $state(0);
@@ -28,7 +28,7 @@ export class Board {
     this.#hero = $state(-1);
     this.#boxes = $state([]);
     this.#heroDirection = $state(Direction.South);
-    this.#history = [];
+    this.#history = $state([]);
   }
 
   get width() {
@@ -115,7 +115,7 @@ export class Board {
     const currentDir = this.#heroDirection;
     const res = this.#move(dir);
     if (res !== Move.Nothing) {
-      this.#history.push([currentDir, res]);
+      this.#history.push([currentDir, dir, res]);
     }
   }
 
@@ -151,14 +151,13 @@ export class Board {
 
   undo() {
     if (this.#history.length > 0) {
-      const [prevDir, move] = this.#history.pop()!;
-      const currentDir = this.#heroDirection;
+      const [prevDir, nextDir, move] = this.#history.pop()!;
       const delta =
-        currentDir === Direction.North
+        nextDir === Direction.North
         ? -this.#width
-        : currentDir === Direction.South
+        : nextDir === Direction.South
         ? this.#width
-        : currentDir === Direction.West
+        : nextDir === Direction.West
         ? -1
         : 1;
       this.#heroDirection = prevDir;
@@ -172,5 +171,9 @@ export class Board {
 
   isLevelFinished() {
     return this.#boxes.every(box => this.#grid[box] === Tile.Target)
+  }
+
+  moveCount() {
+    return this.#history.length;
   }
 }

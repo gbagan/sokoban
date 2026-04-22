@@ -5,11 +5,11 @@
 
   type Props = {
     levels: string[][];
-    finishedLevels: boolean[];
+    bestScores: number[];
     play: (level: number) => void;
   }
 
-  let {levels, finishedLevels, play}: Props = $props();
+  let {levels, bestScores, play}: Props = $props();
 
   let board: Board | null = $state(null);
   let selected = $state(-1);
@@ -26,7 +26,7 @@
     <div class="levels">
       {#each range(levelSection*30, levelSection*30+30) as i}
         <button
-          class={["level", {selected: selected === i, finished: finishedLevels[i]}]}
+          class={["level", {selected: selected === i, finished: bestScores[i] > 0}]}
           onclick={() => selectLevel(i)}
         >
           {i+1}
@@ -61,6 +61,11 @@
       >
         Jouer
       </button>
+      {#if selected >= 0 && bestScores[selected] > 0}
+        <span style:color="green">Terminé en {bestScores[selected]} mouvements</span>
+      {:else if selected >= 0 && bestScores[selected] === 0}
+        <span style:color="red">Non terminé</span>
+      {/if}
     </div>
   </div>
 </main>

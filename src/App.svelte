@@ -4,7 +4,7 @@
   import LevelSelection from "./components/LevelSelection.svelte";
   import { Board, Direction } from "./model.svelte";
   import { arrayOf } from "./util";
-    import { confetti } from "./confetti";
+  import { confetti } from "./confetti";
 
   const LEVEL_COUNT = 184;
 
@@ -14,7 +14,7 @@
   let board = $state(new Board());
   let mode: Mode = $state("game");
   let levelTexts: string[][] = $state.raw([]);
-  let finishedLevels: boolean[] = $state(getFinishedLevels());
+  let bestScores: number[] = $state(getBestScores());
   let isLevelFinished = $derived(currentLevel >= 0 && board.isLevelFinished());
 
   function loadLevel(i: number) {
@@ -34,10 +34,10 @@
     board.undo();
   }
 
-  function getFinishedLevels(): boolean[] {
+  function getBestScores(): number[] {
     const data = localStorage.getItem("sokoban");
     if (data === null) {
-      return arrayOf(LEVEL_COUNT, false);
+      return arrayOf(LEVEL_COUNT, 0);
     }
     return JSON.parse(data)
   }
@@ -55,9 +55,11 @@
   $effect(() => {
     if (isLevelFinished) {
       untrack(() => {
-        console.log("plop");
-        finishedLevels[currentLevel] = true;
-        localStorage.setItem("sokoban", JSON.stringify(finishedLevels));
+        const score = board.moveCount();
+        const lastScore = bestScores[currentLevel];
+        const newScore = lastScore === 0 ? score : Math.min(score, lastScore);
+        bestScores[currentLevel] = newScore;
+        localStorage.setItem("sokoban", JSON.stringify(bestScores));
       })
     }
   })
@@ -91,16 +93,17 @@
 
 {#if mode === "game"}
   <div class="game-container">
-    <div>
+    <header>
       <button class="ui-button" onclick={undo}>Annuler</button>
       <button class="ui-button" onclick={selectLevel}>Choisir un niveau</button>
-    </div>
+      <span class="moves">Mouvements: {board.moveCount()}</span>
+    </header>
     <main>
       <BoardView {board} />
     </main>
   </div>
 {:else}
-  <LevelSelection levels={levelTexts} {finishedLevels} play={loadLevel} />
+  <LevelSelection levels={levelTexts} {bestScores} play={loadLevel} />
 {/if}
 {#if isLevelFinished}
   <div class="confetti-container">
@@ -127,6 +130,16 @@
   main {
     width: 800px;
     height: 800px;
+  }
+
+  header {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+  }
+
+  .moves {
+    color: blue;
   }
 
   .confetti-container {
