@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Direction, Tile, type Board } from "../model.svelte";
-  import { divMod } from "../util";
+  import { divMod } from "@gbagan/utils";
   
   type Props = {
     board: Board;

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Board } from "../model.svelte";
-  import { range } from "../util";
+  import { range } from "@gbagan/utils";
   import BoardView from "./BoardView.svelte";
 
   type Props = {

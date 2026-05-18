@@ -1,4 +1,4 @@
-import { arrayOf } from "./util";
+import { arrayOf } from "@gbagan/utils";
 
 export enum Tile {
   Empty, Wall, Target, Ground

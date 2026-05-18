@@ -3,7 +3,7 @@
   import BoardView from "./components/BoardView.svelte";
   import LevelSelection from "./components/LevelSelection.svelte";
   import { Board, Direction } from "./model.svelte";
-  import { arrayOf } from "./util";
+  import { arrayOf } from "@gbagan/utils";
   import { confetti } from "./confetti";
     import Joypad from "./components/Joypad.svelte";
 
