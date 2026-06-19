@@ -5,35 +5,16 @@
   import { Board, Direction } from "./model.svelte";
   import { arrayOf } from "@gbagan/utils";
   import { confetti } from "./confetti";
-    import Joypad from "./components/Joypad.svelte";
+  import Joypad from "./components/Joypad.svelte";
+  import Game from "./components/Game.svelte";
 
   const LEVEL_COUNT = 184;
 
-  type Mode = "game" | "selection";
-
-  let currentLevel = $state(-1);
-  let board = $state(new Board());
-  let mode: Mode = $state("game");
-  let levelTexts: string[][] = $state.raw([]);
+  let currentLevel: number | null = $state.raw(null);
+  let previousLevel = $state.raw(0);
+  let levelTexts: string[][] | null = $state.raw(null);
   let bestScores: number[] = $state(getBestScores());
-  let isLevelFinished = $derived(currentLevel >= 0 && board.isLevelFinished());
 
-  function loadLevel(i: number) {
-    mode = "game";
-    currentLevel = i;
-    board.load(levelTexts[i]);
-  }
-
-  function selectLevel () {
-    mode = "selection";
-  }
-
-  function undo() {
-    if (isLevelFinished) {
-      return;
-    }
-    board.undo();
-  }
 
   function getBestScores(): number[] {
     const data = localStorage.getItem("sokoban");
@@ -50,8 +31,9 @@
       throw new Error("plop");
     }
     levelTexts = await response.json();
-    loadLevel(0);
   });
+
+  /*
 
   $effect(() => {
     if (isLevelFinished) {
@@ -65,34 +47,6 @@
     }
   })
 
-  function handleKeydown(ev: KeyboardEvent) {
-    if (isLevelFinished) {
-      return;
-    }
-    let prev = true;
-    switch (ev.key) {
-      case "ArrowUp":
-        board.move(Direction.North);
-        break;
-      case "ArrowDown":
-        board.move(Direction.South);
-        break;
-      case "ArrowLeft":
-        board.move(Direction.West);
-        break;
-      case "ArrowRight":
-        board.move(Direction.East);
-        break;
-      default:
-        prev = false;
-    }
-    if (prev) {
-      ev.preventDefault();
-    }
-  }
-</script>
-
-{#if mode === "game"}
   <div class="game-container">
     <header>
       <button class="ui-button" onclick={undo}>Annuler</button>
@@ -106,16 +60,30 @@
       <Joypad move={dir => board.move(dir)} />
     </div>
   </div>
-{:else}
-  <LevelSelection levels={levelTexts} {bestScores} play={loadLevel} />
-{/if}
-{#if isLevelFinished}
+
   <div class="confetti-container">
     <div use:confetti={{stageHeight: "100vh", stageWidth: "100vw"}}></div>
   </div>
-{/if}
 
-<svelte:window onkeydown={handleKeydown} />
+*/
+  function loadLevel(i: number) {
+    currentLevel = i;
+  }
+
+  function quitLevel() {
+    previousLevel = currentLevel!;
+    currentLevel = null;
+  }
+
+</script>
+
+{#if levelTexts === null}
+  <div>Loading</div>
+{:else if currentLevel === null}
+  <LevelSelection levels={levelTexts} {previousLevel} {bestScores} play={loadLevel} />
+{:else}
+  <Game level={currentLevel} text={levelTexts[currentLevel]} {quitLevel} />
+{/if}
 
 <style>
   .game-container {

@@ -1,65 +1,33 @@
+@import "./base.css";
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --bg: #fff3dc;
+  --panel: #fff8ec;
+  --panel-strong: #ffefd2;
+
+  --brown-900: #4b2608;
+  --brown-700: #7c3f12;
+  --brown-500: #a16207;
+
+  --shadow-soft: 0 10px 25px rgb(120 72 20 / 0.16);
+  --shadow-button: 0 5px 0 rgb(120 72 20 / 0.18);
+  --radius-lg: 1.75rem;
+  --radius-md: 0.875rem;
+
+  --shadow-panel:
+    0 14px 28px color-mix(in srgb, var(--amber-950) 14%, transparent),
+    inset 0 0 0 2px rgb(255 255 255 / 0.65);
+
+  --shadow-button:
+    0 5px 0 color-mix(in srgb, var(--amber-950) 25%, transparent),
+    0 8px 14px color-mix(in srgb, var(--amber-950) 12%, transparent);
+
+  --radius-panel: 1.5rem;
+  --radius-button: 1rem;
+
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 14px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-button {
-  font-size: 0.9rem;
-}
-
-body {
-  margin: 0;
-}
-
-p {
-  margin: 0;
+  font: min(2vh, calc(2vw * 9 / 16)) var(--sans);
 }
 
  .ui-button {
