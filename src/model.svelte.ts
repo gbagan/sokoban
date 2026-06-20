@@ -106,7 +106,7 @@ export class Board {
     return this.#boxes;
   }
 
-  get moveCount(): number {
+  get pushCount(): number {
     return this.#moveCount;
   }
 

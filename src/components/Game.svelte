@@ -68,7 +68,7 @@
   <header class="game-header">
     <button class="top-button" onclick={undo}>↩ Annuler</button>
     <button class="top-button" onclick={handleQuitLevel}>▦ Choisir un niveau</button>
-    <div class="move-counter">📦 Déplacements : {board.moveCount}</div>
+    <div class="move-counter">📦 Poussées : {board.pushCount}</div>
   </header>
 
   <section class="game-layout">
@@ -95,7 +95,6 @@
 
     <section class="board-panel">
       <div class="board-frame">
-        <!-- ton plateau : canvas, svg, img ou div grid -->
         <BoardView {board} />
       </div>
     </section>
@@ -447,13 +446,13 @@
 
   color: white;
   background:
-    linear-gradient(180deg, var(--gray-600), #27272a);
+    linear-gradient(180deg, var(--gray-600), var(--gray-950));
 
   font-size: 2rem;
   font-weight: 900;
 
   box-shadow:
-    0 6px 0 #18181b,
+    0 6px 0 #181818,
     0 10px 18px rgb(0 0 0 / 0.18),
     inset 0 2px 0 rgb(255 255 255 / 0.16);
 
@@ -473,7 +472,7 @@
   &:active {
     transform: translateY(3px);
     box-shadow:
-      0 3px 0 #18181b,
+      0 3px 0 #181818,
       inset 0 2px 0 rgb(255 255 255 / 0.1);
   }
 
