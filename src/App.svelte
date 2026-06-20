@@ -1,11 +1,7 @@
 <script lang="ts">
-  import { onMount, untrack } from "svelte";
-  import BoardView from "./components/BoardView.svelte";
+  import { onMount } from "svelte";
   import LevelSelection from "./components/LevelSelection.svelte";
-  import { Board, Direction } from "./model.svelte";
   import { arrayOf } from "@gbagan/utils";
-  import { confetti } from "./confetti";
-  import Joypad from "./components/Joypad.svelte";
   import Game from "./components/Game.svelte";
 
   const LEVEL_COUNT = 184;
@@ -74,7 +70,6 @@
     previousLevel = currentLevel!;
     currentLevel = null;
   }
-
 </script>
 
 {#if levelTexts === null}
@@ -82,50 +77,15 @@
 {:else if currentLevel === null}
   <LevelSelection levels={levelTexts} {previousLevel} {bestScores} play={loadLevel} />
 {:else}
-  <Game level={currentLevel} text={levelTexts[currentLevel]} {quitLevel} />
+  <Game
+    level={currentLevel}
+    text={levelTexts[currentLevel]}
+    finished={bestScores[currentLevel] > 0}
+    {quitLevel}
+  />
 {/if}
 
 <style>
-  .game-container {
-    width: 100vw;
-    margin: 0 auto;
-    text-align: center;
-    border-inline: 1px solid var(--border);
-    min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-    align-items: center;
-    gap: 2rem;
-  }
-
-  .game-sub-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-  }
-
-  @media (orientation: portrait) {
-    .game-sub-container {
-      flex-direction: column;
-    }
-  }
-
-  main {
-    width: min(90vmin, 800px);
-    height: min(90vmin, 800px);
-  }
-
-  header {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-  }
-
-  .moves {
-    color: blue;
-  }
-
   .confetti-container {
     position: fixed;
     top: 15vh;

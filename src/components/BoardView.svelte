@@ -46,8 +46,8 @@
         {:else if tile === Tile.Target}
           <image
             href="./sprites/ground.avif"
-            width="51"
-            height="51"
+            width="50"
+            height="50"
             preserveAspectRatio="none"
             style:transform="translate({50*x}px, {50*y}px)"
           />

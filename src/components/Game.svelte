@@ -5,15 +5,17 @@
   type Props = {
     level: number;
     text: string[];
+    finished: boolean;
     quitLevel: () => void;
   };
 
-  let { level, text, quitLevel }: Props = $props();
+  let { level, text, finished, quitLevel }: Props = $props();
+
+  let version = $state.raw(0);
 
   let board = $derived.by(() => {
-    const b = new Board();
-    b.load(text);
-    return b;
+    version;
+    return new Board(text);
   });
 
   let isLevelFinished = $derived(board.isLevelFinished());
@@ -48,6 +50,10 @@
     quitLevel();
   }
 
+  function restart() {
+    version++;
+  }
+
   function undo() {
     if (isLevelFinished) {
       return;
@@ -62,7 +68,7 @@
   <header class="game-header">
     <button class="top-button" onclick={undo}>↩ Annuler</button>
     <button class="top-button" onclick={handleQuitLevel}>▦ Choisir un niveau</button>
-    <div class="move-counter">👣 Mouvements : 0</div>
+    <div class="move-counter">📦 Déplacements : {board.moveCount}</div>
   </header>
 
   <section class="game-layout">
@@ -77,10 +83,12 @@
 
         <div class="status-list">
           <div class="status-chip level">🔷 Niveau {level + 1}</div>
-          <div class="status-chip not-completed">🚩 Non terminé</div>
-          <!-- ou : <div class="status-chip completed">✅ Terminé</div> -->
-
-          <button class="replay-button">↻ Rejouer</button>
+          {#if finished}
+            <div class="status-chip completed">✅ Terminé</div>
+          {:else}
+            <div class="status-chip not-completed">🚩 Non terminé</div>
+          {/if}
+          <button class="replay-button" onclick={restart}>↻ Rejouer</button>
         </div>
       </div>
     </aside>
@@ -94,10 +102,10 @@
 
     <aside class="side-panel controls-panel">
       <div class="dpad">
-        <button class="dpad-button up">▲</button>
-        <button class="dpad-button left">◀</button>
-        <button class="dpad-button right">▶</button>
-        <button class="dpad-button down">▼</button>
+        <button class="dpad-button up" onclick={() => board.move(Direction.North)}>▲</button>
+        <button class="dpad-button left" onclick={() => board.move(Direction.West)}>◀</button>
+        <button class="dpad-button right" onclick={() => board.move(Direction.East)}>▶</button>
+        <button class="dpad-button down" onclick={() => board.move(Direction.South)}>▼</button>
       </div>
     </aside>
   </section>

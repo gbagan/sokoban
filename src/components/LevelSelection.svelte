@@ -15,11 +15,7 @@
   let selected = $derived(previousLevel);
   let levelSection = $state(0);
 
-  let board = $derived.by(() => {
-    const b = new Board();
-    b.load(levels[selected]);
-    return b;
-  });
+  let board = $derived(new Board(levels[selected]));
 
   function selectLevel(i: number) {
     selected = i;

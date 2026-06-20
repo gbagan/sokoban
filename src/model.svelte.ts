@@ -13,22 +13,73 @@ enum Move {
 }
 
 export class Board {
-  #width: number;
-  #height: number;
-  #grid: Tile[];
+  readonly #width: number;
+  readonly #height: number;
+  readonly #grid: readonly Tile[];
   #hero: number;
   #boxes: number[];
   #heroDirection: Direction;
   #history: [Direction, Direction, Move][];
+  #moveCount: number;
 
-  constructor() {
-    this.#width = $state(0);
-    this.#height = $state(0);
-    this.#grid = $state([]);
-    this.#hero = $state(-1);
-    this.#boxes = $state([]);
-    this.#heroDirection = $state(Direction.South);
-    this.#history = $state([]);
+  constructor(lines: string[]) {
+    this.#height = lines.length;
+    this.#width = Math.max(...lines.map(line => line.length));
+    this.#hero = $state.raw(-1);
+    this.#heroDirection = $state.raw(Direction.South);
+    this.#history = [];
+    this.#moveCount = $state.raw(0);
+
+    const grid = arrayOf(this.#width * this.#height, Tile.Empty);
+    const boxes = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      for (let j = 0; j < line.length; j++) {
+        let index = i * this.#width + j;
+        switch(line[j]) {
+          case '#':
+            grid[index] = Tile.Wall;
+            break;
+          case '.':
+            grid[index] = Tile.Target;
+            break;
+          case '$':
+            boxes.push(index);
+            break;
+          case '*':
+            grid[index] = Tile.Target;
+            boxes.push(index);
+            break;
+          case '@':
+            this.#hero = index;
+            break;
+          case '+':
+            this.#hero = index;
+            grid[index] = Tile.Target;
+        }
+      }
+    }
+
+    const seen = grid.map(() => false);
+    const stack = [this.#hero];
+    while (stack.length > 0) {
+      const current = stack.pop()!;
+      if (seen[current] || grid[current] === Tile.Wall) {
+        continue;
+      }
+      seen[current] = true;
+      if (grid[current] === Tile.Empty) {
+        grid[current] = Tile.Ground;
+      }
+      stack.push(current-1);
+      stack.push(current+1);
+      stack.push(current-this.#width);
+      stack.push(current+this.#width);      
+    }
+    
+    this.#grid = grid;
+    this.#boxes = $state(boxes);
   }
 
   get width() {
@@ -55,60 +106,8 @@ export class Board {
     return this.#boxes;
   }
 
-
-  load(lines: string[]) {
-    this.#height = lines.length;
-    this.#width = Math.max(...lines.map(line => line.length));
-    this.#grid = arrayOf(this.#width * this.#height, Tile.Empty);
-    this.#hero = -1;
-    this.#boxes = [];
-    this.#heroDirection = Direction.South;
-    this.#history = [];
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      for (let j = 0; j < line.length; j++) {
-        let index = i * this.#width + j;
-        switch(line[j]) {
-          case '#':
-            this.#grid[index] = Tile.Wall;
-            break;
-          case '.':
-            this.#grid[index] = Tile.Target;
-            break;
-          case '$':
-            this.#boxes.push(index);
-            break;
-          case '*':
-            this.#grid[index] = Tile.Target;
-            this.#boxes.push(index);
-            break;
-          case '@':
-            this.#hero = index;
-            break;
-          case '+':
-            this.#hero = index;
-            this.#grid[index] = Tile.Target;
-        }
-      }
-    }
-
-    const seen = this.#grid.map(() => false);
-    const stack = [this.#hero];
-    while (stack.length > 0) {
-      const current = stack.pop()!;
-      if (seen[current] || this.#grid[current] === Tile.Wall) {
-        continue;
-      }
-      seen[current] = true;
-      if (this.#grid[current] === Tile.Empty) {
-        this.#grid[current] = Tile.Ground;
-      }
-      stack.push(current-1);
-      stack.push(current+1);
-      stack.push(current-this.#width);
-      stack.push(current+this.#width);      
-    }
+  get moveCount(): number {
+    return this.#moveCount;
   }
 
   move(dir: Direction) {
@@ -146,6 +145,7 @@ export class Board {
     }
     this.#hero = next;
     this.#boxes[nextBoxIdx] = next2;
+    this.#moveCount++;
     return Move.Push;
   }
 
@@ -165,15 +165,12 @@ export class Board {
       if (move === Move.Push) {
         const idx = this.#boxes.indexOf(this.#hero+2*delta);
         this.#boxes[idx] -= delta;
+        this.#moveCount--;
       }
     }
   }
 
   isLevelFinished() {
     return this.#boxes.every(box => this.#grid[box] === Tile.Target)
-  }
-
-  moveCount() {
-    return this.#history.length;
   }
 }
