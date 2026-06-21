@@ -1,15 +1,20 @@
 <script lang="ts">
+    import { untrack } from "svelte";
   import { Board, Direction } from "../model.svelte";
   import BoardView from "./BoardView.svelte";
+  import Button from "./Button.svelte";
+  import LevelCompleted from "./LevelCompleted.svelte";
 
   type Props = {
     level: number;
     text: string[];
     finished: boolean;
-    quitLevel: () => void;
+    completeLevel: (pushCount: number) => void;
+    goToLevelSelection: () => void;
+    goToNextLevel: () => void;
   };
 
-  let { level, text, finished, quitLevel }: Props = $props();
+  let { level, text, finished, completeLevel, goToLevelSelection, goToNextLevel }: Props = $props();
 
   let version = $state.raw(0);
 
@@ -18,25 +23,32 @@
     return new Board(text);
   });
 
-  let isLevelFinished = $derived(board.isLevelFinished());
+  let isLevelCompleted = $derived(board.isLevelCompleted());
+
+  function move(dir: Direction) {
+    board.move(dir);
+    if (isLevelCompleted) {
+      completeLevel(board.pushCount);
+    }
+  }
 
   function handleKeydown(ev: KeyboardEvent) {
-    if (isLevelFinished) {
+    if (isLevelCompleted) {
       return;
     }
     let prev = true;
     switch (ev.key) {
       case "ArrowUp":
-        board.move(Direction.North);
+        move(Direction.North);
         break;
       case "ArrowDown":
-        board.move(Direction.South);
+        move(Direction.South);
         break;
       case "ArrowLeft":
-        board.move(Direction.West);
+        move(Direction.West);
         break;
       case "ArrowRight":
-        board.move(Direction.East);
+        move(Direction.East);
         break;
       default:
         prev = false;
@@ -46,16 +58,12 @@
     }
   }
 
-  function handleQuitLevel() {
-    quitLevel();
-  }
-
   function restart() {
     version++;
   }
 
   function undo() {
-    if (isLevelFinished) {
+    if (isLevelCompleted) {
       return;
     }
     board.undo();
@@ -66,8 +74,8 @@
 
 <main class="sokoban-page">
   <header class="game-header">
-    <button class="top-button" onclick={undo}>↩ Annuler</button>
-    <button class="top-button" onclick={handleQuitLevel}>▦ Choisir un niveau</button>
+    <Button variant="secondary" size="sm" onclick={undo}>↩ Annuler</Button>
+    <Button variant="secondary" size="sm" onclick={goToLevelSelection}>▦ Choisir un niveau</Button>
     <div class="move-counter">📦 Poussées : {board.pushCount}</div>
   </header>
 
@@ -88,7 +96,7 @@
           {:else}
             <div class="status-chip not-completed">🚩 Non terminé</div>
           {/if}
-          <button class="replay-button" onclick={restart}>↻ Rejouer</button>
+          <Button variant="primary" size="lg" onclick={restart}>↻ Rejouer</Button>
         </div>
       </div>
     </aside>
@@ -101,14 +109,23 @@
 
     <aside class="side-panel controls-panel">
       <div class="dpad">
-        <button class="dpad-button up" onclick={() => board.move(Direction.North)}>▲</button>
-        <button class="dpad-button left" onclick={() => board.move(Direction.West)}>◀</button>
-        <button class="dpad-button right" onclick={() => board.move(Direction.East)}>▶</button>
-        <button class="dpad-button down" onclick={() => board.move(Direction.South)}>▼</button>
+        <button class="dpad-button up" onclick={() => move(Direction.North)}>▲</button>
+        <button class="dpad-button left" onclick={() => move(Direction.West)}>◀</button>
+        <button class="dpad-button right" onclick={() => move(Direction.East)}>▶</button>
+        <button class="dpad-button down" onclick={() => move(Direction.South)}>▼</button>
       </div>
     </aside>
   </section>
 </main>
+{#if isLevelCompleted}
+  <LevelCompleted
+    movementCount={0}
+    pushCount={board.pushCount}
+    {restart}
+    {goToNextLevel}
+    {goToLevelSelection}
+  />
+{/if}
 
 <style>
 .sokoban-page {
@@ -127,8 +144,6 @@
     radial-gradient(circle at 92% 90%, rgb(251 191 36 / 0.22), transparent 26%),
     linear-gradient(135deg, #fff7ed, #ffedd5);
 }
-
-/* Barre du haut */
 
 .game-header {
   width: 45rem;
@@ -218,7 +233,7 @@
   justify-self: end;
 
   height: 3rem;
-  padding: 0 30px;
+  padding: 0 2rem;
 
   display: inline-flex;
   align-items: center;
@@ -240,8 +255,6 @@
     inset 0 2px 0 rgb(255 255 255 / 0.75);
 }
 
-/* Layout principal */
-
 .game-layout {
   display: flex;
   align-items: space-around;
@@ -250,11 +263,10 @@
   align-items: center;
 }
 
-/* Cartes latérales */
 
 .side-panel {
   width: 15rem;
-  border-radius: var(--radius-panel);
+  border-radius: 1.5rem;
   padding: 1.5rem 1.25rem;
 
   background:
@@ -332,7 +344,7 @@
   align-items: center;
   gap: 12px;
 
-  border-radius: 14px;
+  border-radius: 0.75rem;
   border: 2px solid rgb(146 64 14 / 0.16);
   background:
     linear-gradient(180deg, #fffdf7, #fff1d8);
@@ -364,23 +376,21 @@
 
 .replay-button {
   margin-top: 8px;
-  min-height: 66px;
+  min-height: 3.5rem;
   width: 100%;
 
-  border: 0;
-  border-radius: 18px;
+  border-radius: 1rem;
 
   color: white;
-  background:
-    linear-gradient(180deg, var(--blue-400), var(--blue-600));
+  background: linear-gradient(180deg, var(--blue-400), var(--blue-600));
 
   font-size: 1.45rem;
   font-weight: 950;
   text-shadow: 0 2px 0 rgb(0 0 0 / 0.22);
 
   box-shadow:
-    0 7px 0 var(--blue-800),
-    0 12px 20px rgb(37 99 235 / 0.22),
+    0 0.4rem 0 var(--blue-800),
+    0 0.625rem 1.125rem rgb(37 99 235 / 0.22),
     inset 0 3px 0 rgb(255 255 255 / 0.35);
 
   cursor: pointer;
@@ -396,8 +406,6 @@
     0 4px 0 var(--blue-800),
     inset 0 3px 0 rgb(255 255 255 / 0.25);
 }
-
-/* Plateau central */
 
 .board-panel {
   padding: 1.5rem;

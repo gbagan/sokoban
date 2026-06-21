@@ -20,7 +20,7 @@ export class Board {
   #boxes: number[];
   #heroDirection: Direction;
   #history: [Direction, Direction, Move][];
-  #moveCount: number;
+  #pushCount: number;
 
   constructor(lines: string[]) {
     this.#height = lines.length;
@@ -28,7 +28,7 @@ export class Board {
     this.#hero = $state.raw(-1);
     this.#heroDirection = $state.raw(Direction.South);
     this.#history = [];
-    this.#moveCount = $state.raw(0);
+    this.#pushCount = $state.raw(0);
 
     const grid = arrayOf(this.#width * this.#height, Tile.Empty);
     const boxes = [];
@@ -107,7 +107,7 @@ export class Board {
   }
 
   get pushCount(): number {
-    return this.#moveCount;
+    return this.#pushCount;
   }
 
   move(dir: Direction) {
@@ -145,7 +145,7 @@ export class Board {
     }
     this.#hero = next;
     this.#boxes[nextBoxIdx] = next2;
-    this.#moveCount++;
+    this.#pushCount++;
     return Move.Push;
   }
 
@@ -165,12 +165,12 @@ export class Board {
       if (move === Move.Push) {
         const idx = this.#boxes.indexOf(this.#hero+2*delta);
         this.#boxes[idx] -= delta;
-        this.#moveCount--;
+        this.#pushCount--;
       }
     }
   }
 
-  isLevelFinished() {
+  isLevelCompleted() {
     return this.#boxes.every(box => this.#grid[box] === Tile.Target)
   }
 }

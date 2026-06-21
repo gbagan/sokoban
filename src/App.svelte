@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import LevelSelection from "./components/LevelSelection.svelte";
-  import { arrayOf } from "@gbagan/utils";
+  import { arrayOf, update } from "@gbagan/utils";
   import Game from "./components/Game.svelte";
 
   const LEVEL_COUNT = 184;
@@ -9,8 +9,7 @@
   let currentLevel: number | null = $state.raw(null);
   let previousLevel = $state.raw(0);
   let levelTexts: string[][] | null = $state.raw(null);
-  let bestScores: number[] = $state(getBestScores());
-
+  let bestScores: number[] = $state.raw(getBestScores());
 
   function getBestScores(): number[] {
     const data = localStorage.getItem("sokoban");
@@ -20,56 +19,32 @@
     return JSON.parse(data)
   }
 
-  onMount(async () => {
-    const request = new Request("./levels.json");
-    const response = await fetch(request);
-    if (!response.ok) {
-      throw new Error("plop");
-    }
-    levelTexts = await response.json();
-  });
+  function completeLevel(pushCount: number) {
+    bestScores = update(bestScores, [currentLevel!], s => s === 0 ? pushCount : Math.min(s, pushCount));
+    localStorage.setItem("sokoban", JSON.stringify(bestScores));
+  }
 
-  /*
-
-  $effect(() => {
-    if (isLevelFinished) {
-      untrack(() => {
-        const score = board.moveCount();
-        const lastScore = bestScores[currentLevel];
-        const newScore = lastScore === 0 ? score : Math.min(score, lastScore);
-        bestScores[currentLevel] = newScore;
-        localStorage.setItem("sokoban", JSON.stringify(bestScores));
-      })
-    }
-  })
-
-  <div class="game-container">
-    <header>
-      <button class="ui-button" onclick={undo}>Annuler</button>
-      <button class="ui-button" onclick={selectLevel}>Choisir un niveau</button>
-      <span class="moves">Mouvements: {board.moveCount()}</span>
-    </header>
-    <div class="game-sub-container">
-      <main>
-        <BoardView {board} />
-      </main>
-      <Joypad move={dir => board.move(dir)} />
-    </div>
-  </div>
-
-  <div class="confetti-container">
-    <div use:confetti={{stageHeight: "100vh", stageWidth: "100vw"}}></div>
-  </div>
-
-*/
   function loadLevel(i: number) {
     currentLevel = i;
   }
 
-  function quitLevel() {
+  function goToLevelSelection() {
     previousLevel = currentLevel!;
     currentLevel = null;
   }
+
+  function goToNextLevel() {
+    currentLevel = Math.min(currentLevel! + 1, levelTexts!.length - 1)
+  }
+
+  onMount(async () => {
+    const request = new Request("./levels.json");
+    const response = await fetch(request);
+    if (!response.ok) {
+      throw new Error("Levels cannot be loaded");
+    }
+    levelTexts = await response.json();
+  });
 </script>
 
 {#if levelTexts === null}
@@ -81,20 +56,8 @@
     level={currentLevel}
     text={levelTexts[currentLevel]}
     finished={bestScores[currentLevel] > 0}
-    {quitLevel}
+    {completeLevel}
+    {goToLevelSelection}
+    {goToNextLevel}
   />
 {/if}
-
-<style>
-  .confetti-container {
-    position: fixed;
-    top: 15vh;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    display: flex;
-    justify-content: center;
-    z-index: 400;
-  }
-</style>

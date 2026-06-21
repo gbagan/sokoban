@@ -2,6 +2,7 @@
   import { Board } from "../model.svelte";
   import { range } from "@gbagan/utils";
   import BoardView from "./BoardView.svelte";
+  import Button from "./Button.svelte";
 
   type Props = {
     levels: string[][];
@@ -13,8 +14,7 @@
   let {levels, previousLevel, bestScores, play}: Props = $props();
 
   let selected = $derived(previousLevel);
-  let levelSection = $state(0);
-
+  let levelSection = $derived(previousLevel / 30 | 0);
   let board = $derived(new Board(levels[selected]));
 
   function selectLevel(i: number) {
@@ -27,7 +27,7 @@
     <section class="level-panel">
       <h1 class="level-title">Sélection du niveau</h1>
       <div class="level-grid">
-        {#each range(levelSection*30, levelSection*30+30) as i}
+        {#each range(30*levelSection, 30*levelSection+30) as i}
           <button
             class={["level-button", {selected: selected === i, completed: bestScores[i] > 0}]}
             onclick={() => selectLevel(i)}
@@ -60,7 +60,7 @@
       </div>
 
       <div class="preview-actions">
-        <button class="play-button" onclick={() => play(selected)}>▶ Jouer</button>
+        <Button variant="primary" size="xl" onclick={() => play(selected)}>▶ Jouer</Button>
         {#if bestScores[selected] > 0}
           <div class="status-badge completed">🏁 Terminé</div>
         {:else}
@@ -68,108 +68,77 @@
         {/if}
       </div>
     </section>
-<!--
-  <div class="right">
-    <div class="preview">
-      {#if board !== null}
-        {#key selected}
-          <BoardView {board} />
-        {/key}
-      {/if}
-    </div>
-    <div>
-      <button
-        class="ui-button"
-        disabled={selected === -1}
-        onclick={() => play(selected)}
-      >
-        Jouer
-      </button>
-      {#if selected >= 0 && bestScores[selected] > 0}
-        <span style:color="green">Terminé en {bestScores[selected]} mouvements</span>
-      {:else if selected >= 0 && bestScores[selected] === 0}
-        <span style:color="red">Non terminé</span>
-      {/if}
-    </div>
-  </div>
-  -->
   </main>
 </div>
 
 <style>
-.container {
-  min-height: 100vh;
-  color: var(--brown-900);
+  .container {
+    min-height: 100vh;
 
-  background:
-    radial-gradient(circle at 10% 10%, rgb(255 255 255 / 0.8), transparent 28%),
-    radial-gradient(circle at 90% 85%, rgb(255 218 170 / 0.45), transparent 32%),
-    linear-gradient(135deg, #fff7ed, var(--bg));
+    background:
+      radial-gradient(circle at 10% 10%, rgb(255 255 255 / 0.8), transparent 28%),
+      radial-gradient(circle at 90% 85%, rgb(255 218 170 / 0.45), transparent 32%),
+      linear-gradient(135deg, #fff7ed, var(--bg));
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-.level-screen {
-  aspect-ratio: 16 / 9;
-  width: min(100vw, calc(100vh * 16 / 9));
-  height: min(100vh, calc(100vw * 9 / 16));
-  box-sizing: border-box;
-  padding: 2.5rem;
+  .level-screen {
+    aspect-ratio: 16 / 9;
+    width: min(100vw, calc(100vh * 16 / 9));
+    height: min(100vh, calc(100vw * 9 / 16));
+    box-sizing: border-box;
+    padding: 2.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.75rem;
+    align-items: center;
+  }
 
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.75rem;
-  align-items: center;
-}
+  .level-panel,
+  .preview-panel {
+    position: relative;
+    border-radius: var(--radius-lg);
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 0.9), rgb(255 248 236 / 0.95)),
+      var(--panel);
+    border: 3px solid rgb(255 255 255 / 0.85);
+    box-shadow:
+      var(--shadow-soft),
+      inset 0 0 0 2px rgb(139 92 24 / 0.12);
+  }
 
-/* Cartes principales */
+  .level-panel {
+    padding: 4rem 2.25rem 2rem;
+  }
 
-.level-panel,
-.preview-panel {
-  position: relative;
-  border-radius: var(--radius-lg);
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.9), rgb(255 248 236 / 0.95)),
-    var(--panel);
-  border: 3px solid rgb(255 255 255 / 0.85);
-  box-shadow:
-    var(--shadow-soft),
-    inset 0 0 0 2px rgb(139 92 24 / 0.12);
-}
+  .preview-panel {
+    padding: 2.25rem;
+  }
 
-.level-panel {
-  padding: 4rem 2.25rem 2rem;
-}
+  .level-title {
+    position: absolute;
+    top: -1.75rem;
+    left: 50%;
+    transform: translateX(-50%);
 
-.preview-panel {
-  padding: 2.25rem;
-}
+    padding: 0.75rem 2rem;
+    border-radius: 0.875rem;
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    text-shadow: 0 3px 0 rgb(0 0 0 / 0.25);
 
-/* Titre panneau gauche */
-
-.level-title {
-  position: absolute;
-  top: -1.75rem;
-  left: 50%;
-  transform: translateX(-50%);
-
-  padding: 0.75rem 2rem;
-  border-radius: 0.875rem;
-  color: #fff;
-  font-size: 1.5rem;
-  font-weight: 900;
-  letter-spacing: 0.5px;
-  text-shadow: 0 3px 0 rgb(0 0 0 / 0.25);
-
-  background:
-    linear-gradient(180deg, #b86b25, #7c3f12);
-  border: 3px solid #5f2f0b;
-  box-shadow:
-    0 8px 0 #4b2608,
-    0 12px 20px rgb(75 38 8 / 0.28);
-}
+    background:
+      linear-gradient(180deg, var(--amber-600), var(--amber-800));
+    border: 3px solid var(--amber-950);
+    box-shadow:
+      0 8px 0 var(--amber-950),
+      0 12px 20px rgb(75 38 8 / 0.28);
+  }
 
 /* Grille de niveaux */
 
@@ -180,20 +149,16 @@
 }
 
 .level-button {
-  width: 100%;
   aspect-ratio: 1;
   border: 2px solid rgb(124 63 18 / 0.25);
   border-radius: 1rem;
 
-  color: var(--brown-900);
+  color: var(--amber-900);
   font-size: 1.75rem;
   font-weight: 800;
 
-  background:
-    linear-gradient(180deg, #fffdf7, #fff0d6);
-  box-shadow:
-    var(--shadow-button),
-    inset 0 2px 0 rgb(255 255 255 / 0.9);
+  background: var(--secondary-button-bg);
+  box-shadow: var(--secondary-button-shadow);
 
   cursor: pointer;
   transition:
@@ -223,8 +188,7 @@
 .level-button.completed {
   color: #14532d;
   border-color: rgb(34 197 94 / 0.7);
-  background:
-    linear-gradient(180deg, var(--green-200), var(--green-400));
+  background: linear-gradient(180deg, var(--green-200), var(--green-400));
   box-shadow:
     0 5px 0 rgb(21 128 61 / 0.35),
     inset 0 2px 0 rgb(255 255 255 / 0.7);
@@ -238,8 +202,6 @@
   color: var(--green-700);
 }
 
-/* Niveau sélectionné */
-
 .level-button.selected {
   color: var(--blue-700);
   border: 4px solid var(--blue-600);
@@ -250,8 +212,6 @@
     0 5px 0 rgb(37 99 235 / 0.35),
     inset 0 2px 0 rgb(255 255 255 / 0.9);
 }
-
-/* Pagination */
 
 .level-pages {
   margin-top: 2rem;
@@ -268,30 +228,21 @@
   border: 2px solid rgb(124 63 18 / 0.2);
   border-radius: 0.8rem;
 
-  color: var(--brown-700);
+  color: var(--amber-800);
   font-size: 1rem;
   font-weight: 700;
 
-  background:
-    linear-gradient(180deg, #fffaf0, #ffeecf);
-  box-shadow:
-    0 4px 0 rgb(120 72 20 / 0.14),
-    inset 0 2px 0 rgb(255 255 255 / 0.85);
-
+  background: var(--secondary-button-bg);
+  box-shadow: var(--secondary-button-shadow);
   cursor: pointer;
 }
 
 .page-button.selected {
   color: white;
   border-color: var(--blue-700);
-  background:
-    linear-gradient(180deg, var(--blue-400), var(--blue-600));
-  box-shadow:
-    0 5px 0 var(--blue-800),
-    inset 0 2px 0 rgb(255 255 255 / 0.35);
+  background: var(--primary-button-bg);
+  box-shadow: var(--primary-button-shadow);
 }
-
-/* Panneau aperçu */
 
 .preview-title {
   width: fit-content;
@@ -328,46 +279,6 @@
   grid-template-columns: 1fr auto;
   gap: 1rem;
   align-items: center;
-}
-
-.play-button {
-  height: 4rem;
-  width: 20rem;
-  border: 0;
-  border-radius: 1rem;
-
-  color: white;
-  font-size: 1.75rem;
-  font-weight: 950;
-  letter-spacing: 0.4px;
-  text-shadow: 0 3px 0 rgb(0 0 0 / 0.22);
-
-  background:
-    linear-gradient(180deg, var(--blue-400), var(--blue-600));
-  box-shadow:
-    0 7px 0 var(--blue-800),
-    0 12px 20px rgb(37 99 235 / 0.22),
-    inset 0 3px 0 rgb(255 255 255 / 0.35);
-
-  cursor: pointer;
-  transition:
-    transform 160ms ease,
-    box-shadow 160ms ease;
-
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow:
-      0 10px 0 var(--blue-800),
-      0 16px 26px rgb(37 99 235 / 0.26),
-      inset 0 3px 0 rgb(255 255 255 / 0.35);
-  }
-
-  &:active {
-    transform: translateY(3px);
-    box-shadow:
-      0 4px 0 var(--blue-800),
-      inset 0 3px 0 rgb(255 255 255 / 0.28);
-  }
 }
 
 .status-badge {
