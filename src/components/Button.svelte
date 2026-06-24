@@ -23,7 +23,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 0.625rem;
 
     border-radius: var(--button-radius);
     border: 2px solid transparent;
